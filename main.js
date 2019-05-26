@@ -25,23 +25,86 @@ $(document).ready(function(){
   //tramite la funzione crea mese gli passo la data corrente per creare il mese_corrente
   crea_mese(current_date);
 
-  // FUNZIONE CHE MI CREA IL Mese
+  // intercetto il click sul mese successivo
+  $('#mese-successivo').click(function(){
+    if(current_date.isSameOrAfter(data_max)){
+      $(this).attr('disable', true);
+    }else{
+      current_date.add(1, 'months');
+      crea_mese(current_date);
+    }
+  });
+
+  // FUNZIONE CHE MI CREA IL MESE
 
   function crea_mese(parametro_mese){
     //resetto il contenitore
     $('#calendario').empty();
 
+
     // leggo i giorni presenti nel mese mese_corrente
     var giorni= parametro_mese.daysInMonth();
 
     // preparo quindi le variabili da usare nel display del mese_corrente
+    var mese_ajax =parametro_mese.format('M');
+    var mese_ajax = mese_ajax - 1;
+    console.log(mese_ajax);
     var mese = parametro_mese.format('MMMM');
     var anno = parametro_mese.format('YYYY');
-    console.log(mese);
-    console.log(anno);
+
+    // carico l'api ajax
+    $.ajax({
+      'url':'https://flynn.boolean.careers/exercises/api/holidays',
+      'method': 'GET',
+      // passo questo valore tramite la variabile all'api ajax
+      'data':{
+        'year': '2018',
+        'month': mese_ajax
+      },
+      'success': function(data){
+        //mi dichiaro una funzione per portare il response del mio ajax fuori
+        giorni_festa(data.response);
+      },
+      'error': function(){
+        alert('Inserisci un numero');
+      }
+    });
+
+    // inserisco nel titolo il mese e l'anno correnti
+
+    $('#mese_corrente').text(mese + ' ' + anno);
+
+    // scorro la variabile giorno_iso
+    for(var i =1; i <= giorni; i ++){
+      // salvo nella variabile giorno il valore di i + il mese corrente
+      var giorno = i + ' ' + mese;
+      // definisco le variabili per popolare il mio template_html
+      var variabili ={
+        'giorno_template':giorno,
+        'giorno_iso':parametro_mese.format('YYYY-MM-') + format_day(i)
+      }
+      function giorni_festa(giorni_festa){
+        var container_mesi = giorni_festa;
+        console.log(container_mesi);
+        for(var i=0; i<container_mesi.length; i++){
+          if(container_mesi[i].date == variabili.giorno_iso){
+            variabili.giorno_template = container_mesi[i].name;
+          }
+        }
+      }
+      // infine faccio l'append delle mie variabili nel template di handlebars
+      $('#calendario').append(template_fucntion(variabili));
+
+    }
   }
 
 
-
+  // definisco una funzione che mi aggiunge uno 0 davanti ai numeri del mese_corrente
+  function format_day(giorni){
+    if(giorni<10){
+      return '0' + giorni
+    }
+    return giorni
+  }
 
 });
