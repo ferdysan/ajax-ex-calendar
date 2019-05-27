@@ -35,6 +35,16 @@ $(document).ready(function(){
     }
   });
 
+  // intercetto il click sul mese precedente
+  $('#mese-precedente').click(function(){
+    if(current_date.isSameOrBefore(data_min)){
+      $(this).attr('disable', true);
+    }else{
+      current_date.subtract(1, 'months');
+      crea_mese(current_date);
+    }
+  });
+
   // FUNZIONE CHE MI CREA IL MESE
 
   function crea_mese(parametro_mese){
@@ -70,6 +80,8 @@ $(document).ready(function(){
       }
     });
 
+    var container_mese =[];
+
     // inserisco nel titolo il mese e l'anno correnti
 
     $('#mese_corrente').text(mese + ' ' + anno);
@@ -83,21 +95,35 @@ $(document).ready(function(){
         'giorno_template':giorno,
         'giorno_iso':parametro_mese.format('YYYY-MM-') + format_day(i)
       }
-      function giorni_festa(giorni_festa){
-        var container_mesi = giorni_festa;
-        console.log(container_mesi);
-        for(var i=0; i<container_mesi.length; i++){
-          if(container_mesi[i].date == variabili.giorno_iso){
-            variabili.giorno_template = container_mesi[i].name;
-          }
-        }
-      }
       // infine faccio l'append delle mie variabili nel template di handlebars
-      $('#calendario').append(template_fucntion(variabili));
+      // $('#calendario').append(template_fucntion(variabili));
+      container_mese.push(variabili);
+    }
+    console.log(container_mese);
+    // tramite una funzione porto fuori il response della mia api e controllo se ci sono
+    // corrispondenze con i giorni
+    function giorni_festa(giorni){
+      var container_feste = giorni;
+      var j=0;
+
+       for(var i=0; i<container_mese.length; i++){
+         if(container_feste[j].date === container_mese[i].giorno_iso){
+           container_mese[i].giorno_template = container_feste[j].name;
+           j++;
+         }
+
+           variabili_finali={
+             'giorno_template': container_mese[i].giorno_template
+           }
+           $('#calendario').append(template_fucntion(variabili_finali));
+
+
+      }
+
+
 
     }
   }
-
 
   // definisco una funzione che mi aggiunge uno 0 davanti ai numeri del mese_corrente
   function format_day(giorni){
