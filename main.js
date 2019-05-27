@@ -58,7 +58,7 @@ $(document).ready(function(){
     // preparo quindi le variabili da usare nel display del mese_corrente
     var mese_ajax =parametro_mese.format('M');
     var mese_ajax = mese_ajax - 1;
-    console.log(mese_ajax);
+
     var mese = parametro_mese.format('MMMM');
     var anno = parametro_mese.format('YYYY');
 
@@ -73,14 +73,17 @@ $(document).ready(function(){
       },
       'success': function(data){
         //mi dichiaro una funzione per portare il response del mio ajax fuori
-        giorni_festa(data.response);
+        var festivita = data.response;
+
+        for (var i = 0; i < festivita.length; i++) {
+          var festa = festivita[i];
+          $('#calendario li[data-giorno_iso="'+ festa.date+'"]').addClass('festivita');
+        }
       },
       'error': function(){
         alert('Inserisci un numero');
       }
     });
-
-    var container_mese =[];
 
     // inserisco nel titolo il mese e l'anno correnti
 
@@ -96,33 +99,12 @@ $(document).ready(function(){
         'giorno_iso':parametro_mese.format('YYYY-MM-') + format_day(i)
       }
       // infine faccio l'append delle mie variabili nel template di handlebars
-      // $('#calendario').append(template_fucntion(variabili));
-      container_mese.push(variabili);
+      $('#calendario').append(template_fucntion(variabili));
     }
-    console.log(container_mese);
+
     // tramite una funzione porto fuori il response della mia api e controllo se ci sono
     // corrispondenze con i giorni
-    function giorni_festa(giorni){
-      var container_feste = giorni;
-      var j=0;
 
-       for(var i=0; i<container_mese.length; i++){
-         if(container_feste[j].date === container_mese[i].giorno_iso){
-           container_mese[i].giorno_template = container_feste[j].name;
-           j++;
-         }
-
-           variabili_finali={
-             'giorno_template': container_mese[i].giorno_template
-           }
-           $('#calendario').append(template_fucntion(variabili_finali));
-
-
-      }
-
-
-
-    }
   }
 
   // definisco una funzione che mi aggiunge uno 0 davanti ai numeri del mese_corrente
